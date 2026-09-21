@@ -1,31 +1,23 @@
 name: Deploy static content to Pages
 
 on:
-  # Se ejecuta automáticamente en cada push a la rama principal ('main' o 'master')
   push:
     branches:
       - main
       - master
-
-  # Permite ejecutar este flujo manualmente desde la pestaña Actions de GitHub
   workflow_dispatch:
 
-# Configurar permisos para GITHUB_TOKEN y permitir despliegues en GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
-# Permite una sola implementación simultánea, omitiendo ejecuciones intermedias en cola
 concurrency:
   group: 'pages'
   cancel-in-progress: false
 
 jobs:
   build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout del repositorio
@@ -35,26 +27,40 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
-      - name: Instalar dependencias
-        run: npm ci || npm install
+      - name: Instalar dependencias con compatibilidad
+        run: npm install --legacy-peer-deps
 
-      - name: Compilar aplicación estática (Vite build)
+      - name: Compilar aplicación estática
         run: npm run build
 
-      - name: Copiar index.html a 404.html como fallback para GitHub Pages
-        run: cp ./dist/index.html ./dist/404.html || true
+      - name: Crear 404.html y desactivar Jekyll (.nojekyll)
+        run: |
+          cp ./dist/index.html ./dist/404.html || true
+          touch ./dist/.nojekyll
 
+      # 1. Despliegue automático a rama gh-pages (funciona sin configuración manual en GitHub)
+      - name: Desplegar en rama gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          force_orphan: true
+
+      # 2. Despliegue directo en GitHub Pages si está habilitado
       - name: Configurar GitHub Pages
+        continue-on-error: true
         uses: actions/configure-pages@v5
 
-      - name: Subir artefacto de la carpeta dist
+      - name: Subir artefacto de Pages
+        continue-on-error: true
         uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
 
       - name: Desplegar en GitHub Pages
+        continue-on-error: true
         id: deployment
         uses: actions/deploy-pages@v4
+
 
