@@ -1,0 +1,6 @@
+{
+  "name": "1 minuto para mi",
+  "description": "Aplicación de respiración guiada y meditación rápida de 1 minuto para el personal del Hospital Universitario del Valle (HUV) durante su jornada laboral, con recordatorios suaves y relajación consciente.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
