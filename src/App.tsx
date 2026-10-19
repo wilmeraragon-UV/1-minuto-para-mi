@@ -5,13 +5,16 @@ import { BreathingSession } from './components/BreathingSession';
 import { SessionCompletionModal } from './components/SessionCompletionModal';
 import { ReminderModal } from './components/ReminderModal';
 import { ReminderBanner } from './components/ReminderBanner';
+import { ApiKeyModal } from './components/ApiKeyModal';
+import { AiPauseGenerator } from './components/AiPauseGenerator';
 import { WorkdayDashboard } from './components/WorkdayDashboard';
 import { HuvBadge } from './components/HuvBadge';
 import { HUV_EXERCISES } from './data/exercises';
 import { soundService } from './services/soundService';
 import { NotificationService, DEFAULT_REMINDER_CONFIG } from './services/notificationService';
+import { GeminiService } from './services/geminiService';
 import { ExerciseGuide, ReminderConfig, SessionLog, WorkShift } from './types';
-import { Sparkles, HeartHandshake, ShieldCheck, Clock, Bell } from 'lucide-react';
+import { Sparkles, HeartHandshake, ShieldCheck, Clock, Bell, Key } from 'lucide-react';
 
 const LOGS_STORAGE_KEY = 'huv_un_minuto_logs_v1';
 
@@ -27,6 +30,8 @@ export default function App() {
   // Estado de modales y sesiones
   const [activeExercise, setActiveExercise] = useState<ExerciseGuide | null>(null);
   const [isReminderModalOpen, setIsReminderModalOpen] = useState<boolean>(false);
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState<boolean>(false);
+  const [hasApiKey, setHasApiKey] = useState<boolean>(() => GeminiService.hasApiKey());
   const [isReminderBannerVisible, setIsReminderBannerVisible] = useState<boolean>(false);
   const [completedSessionData, setCompletedSessionData] = useState<{
     exercise: ExerciseGuide;
@@ -242,6 +247,8 @@ export default function App() {
         streakDays={streakDays}
         currentShift={reminderConfig.shift}
         onChangeShift={handleShiftChange}
+        onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
+        hasApiKey={hasApiKey}
       />
 
       {/* Banner flotante de recordatorio suave cuando se activa */}
@@ -295,6 +302,14 @@ export default function App() {
             </div>
           </div>
         </section>
+
+        {/* Generador de Pausa Consciente Asistida por Inteligencia Artificial Gemini */}
+        <AiPauseGenerator
+          currentShift={reminderConfig.shift}
+          onStartGeneratedExercise={(exercise) => setActiveExercise(exercise)}
+          onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
+          hasApiKey={hasApiKey}
+        />
 
         {/* Selector de ejercicios de 1 minuto */}
         <ExerciseSelector
@@ -388,6 +403,13 @@ export default function App() {
           onTriggerTestAlert={handleTriggerTestAlert}
         />
       )}
+
+      {/* Modal de Configuración de API Key de Gemini */}
+      <ApiKeyModal
+        isOpen={isApiKeyModalOpen}
+        onClose={() => setIsApiKeyModalOpen(false)}
+        onKeySaved={() => setHasApiKey(GeminiService.hasApiKey())}
+      />
 
       {/* Pie de página institucional del HUV */}
       <footer className="mt-12 bg-white border-t border-slate-200 py-8 px-4 text-xs text-slate-500">

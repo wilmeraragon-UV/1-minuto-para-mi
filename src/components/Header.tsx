@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, Bell, BellOff, Sparkles, Clock } from 'lucide-react';
+import { Volume2, VolumeX, Bell, BellOff, Sparkles, Clock, Key } from 'lucide-react';
 import { HuvBadge } from './HuvBadge';
 import { ReminderConfig, WorkShift } from '../types';
 import { WORK_SHIFTS } from '../data/exercises';
@@ -13,6 +13,8 @@ interface HeaderProps {
   streakDays: number;
   currentShift: WorkShift;
   onChangeShift: (shift: WorkShift) => void;
+  onOpenApiKeyModal: () => void;
+  hasApiKey: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -24,6 +26,8 @@ export const Header: React.FC<HeaderProps> = ({
   streakDays,
   currentShift,
   onChangeShift,
+  onOpenApiKeyModal,
+  hasApiKey,
 }) => {
   const activeShiftInfo = WORK_SHIFTS.find((s) => s.id === currentShift) || WORK_SHIFTS[3];
 
@@ -126,6 +130,30 @@ export const Header: React.FC<HeaderProps> = ({
                   <BellOff className="w-3.5 h-3.5 text-slate-400" />
                   <span>Avisos pausados</span>
                 </>
+              )}
+            </button>
+
+            {/* Botón de configuración de API Key de Gemini con icono de llave */}
+            <button
+              onClick={onOpenApiKeyModal}
+              id="header-api-key-btn"
+              type="button"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
+                hasApiKey
+                  ? 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 shadow-2xs'
+                  : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'
+              }`}
+              title={hasApiKey ? 'Gemini API Key configurada (hacer clic para editar)' : 'Configurar API Key de Gemini (🔑)'}
+              aria-label="Configurar API Key de Gemini"
+            >
+              <Key className="w-3.5 h-3.5 text-amber-600" />
+              {hasApiKey ? (
+                <>
+                  <span className="hidden sm:inline font-bold text-amber-800">IA Activa</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                </>
+              ) : (
+                <span className="text-slate-700 font-semibold">ingresa tu clave IA</span>
               )}
             </button>
 
